@@ -2,13 +2,27 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Menu, X, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ModeToggle } from '@/components/theme-btn';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/lib/auth-context';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/');
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   const navItems = [
     { name: 'Home', href: '/' },
@@ -56,19 +70,37 @@ export default function Navbar() {
 
           {/* Desktop Actions - Right */}
           <div className='hidden md:flex md:items-center md:gap-2 z-10'>
-            <Button
-              variant='outline'
-              className='bg-white text-black border-black hover:bg-gray-100 dark:bg-black dark:text-white dark:border-white dark:hover:bg-gray-900'
-              asChild
-            >
-              <Link href='/sign-in'>Sign In</Link>
-            </Button>
-            <Button
-              className='bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100'
-              asChild
-            >
-              <Link href='/sign-up'>Sign Up</Link>
-            </Button>
+            {user ? (
+              <>
+                <span className='text-sm text-muted-foreground px-2'>
+                  {user.displayName || user.email}
+                </span>
+                <Button
+                  variant='outline'
+                  onClick={handleLogout}
+                  className='flex items-center gap-2'
+                >
+                  <LogOut className='h-4 w-4' />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant='outline'
+                  className='bg-white text-black border-black hover:bg-gray-100 dark:bg-black dark:text-white dark:border-white dark:hover:bg-gray-900'
+                  asChild
+                >
+                  <Link href='/sign-in'>Sign In</Link>
+                </Button>
+                <Button
+                  className='bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100'
+                  asChild
+                >
+                  <Link href='/sign-up'>Sign Up</Link>
+                </Button>
+              </>
+            )}
             <ModeToggle />
           </div>
 
@@ -115,24 +147,43 @@ export default function Navbar() {
                 <span className='relative z-10 pl-2'>{item.name}</span>
               </Link>
             ))}
-            <div className='flex items-center gap-2 px-4 pt-4 border-t border-border/60'>
-              <Button
-                variant='outline'
-                size='sm'
-                className='flex-1 bg-white text-black border-black hover:bg-gray-100 dark:bg-black dark:text-white dark:border-white dark:hover:bg-gray-900'
-                asChild
-                onClick={() => setIsOpen(false)}
-              >
-                <Link href='/sign-in'>Sign In</Link>
-              </Button>
-              <Button
-                size='sm'
-                className='flex-1 bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100'
-                asChild
-                onClick={() => setIsOpen(false)}
-              >
-                <Link href='/sign-up'>Sign Up</Link>
-              </Button>
+            <div className='flex flex-col gap-2 px-4 pt-4 border-t border-border/60'>
+              {user ? (
+                <>
+                  <div className='text-sm text-muted-foreground px-2 py-1'>
+                    {user.displayName || user.email}
+                  </div>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={handleLogout}
+                    className='w-full flex items-center justify-center gap-2'
+                  >
+                    <LogOut className='h-4 w-4' />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    className='w-full bg-white text-black border-black hover:bg-gray-100 dark:bg-black dark:text-white dark:border-white dark:hover:bg-gray-900'
+                    asChild
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Link href='/sign-in'>Sign In</Link>
+                  </Button>
+                  <Button
+                    size='sm'
+                    className='w-full bg-black text-white hover:bg-gray-900 dark:bg-white dark:text-black dark:hover:bg-gray-100'
+                    asChild
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Link href='/sign-up'>Sign Up</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -5,6 +5,8 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  updateProfile,
+  signOut,
   User,
 } from "firebase/auth";
 import { auth } from "./firebase";
@@ -13,7 +15,8 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<User>;
-  signUp: (name: string, email: string, password: string) => Promise<User>;
+  signUp: (email: string, password: string, name?: string) => Promise<User>;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,13 +39,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // user state will also be updated by onAuthStateChanged listener
     return credential.user;
   };
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, name?: string) => {
     const credential = await createUserWithEmailAndPassword(auth, email, password);
+    if (name) {
+      await updateProfile(credential.user, { displayName: name });
+    }
     return credential.user;
   };
 
+  const logout = async () => {
+    await signOut(auth);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn , signUp}}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, logout }}>
       {children}
     </AuthContext.Provider>
   );

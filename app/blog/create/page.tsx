@@ -96,7 +96,7 @@ export default function CreateBlogPage() {
             <main className="flex-1">
                 <div className="container mx-auto py-16 md:px-6 px-4">
                     <div className="max-w-2xl mx-auto">
-                        <Link href="/app/blog/page.tsx" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
+                        <Link href="/blog" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors">
                             <ArrowLeft className="h-4 w-4" />
                             Back to Blog</Link>
                         <h1 className="text-3xl font-bold tracking-tight mb-8">Write a new post</h1>

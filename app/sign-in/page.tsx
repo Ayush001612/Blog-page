@@ -18,11 +18,12 @@ export default function LoginPage() {
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
 
+    // Redirect to blog when already signed in
     useEffect(() => {
-        if (!user) {
-            router.push("/blog")
+        if (user) {
+            router.push("/blog");
         }
-    }, [user, router])
+    }, [user, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -39,13 +40,14 @@ export default function LoginPage() {
         }
     }
 
+    // While redirecting or already signed in, avoid flashing the form
     if (user) {
         return null
     }
 
     return (
         <div className="flex min-h-screen flex-col">
-          
+
             <main className="flex-1 flex items-center justify-center py-16 px-4">
                 <Card className="w-full max-w-md">
                     <CardHeader className="text-center">
@@ -87,7 +89,7 @@ export default function LoginPage() {
                             </Button>
                             <p className="text-sm text-muted-foreground text-center">
                                 Don&apos;t have an account?{" "}
-                                <Link href="/signup" className="text-foreground underline underline-offset-4 hover:text-foreground/80">
+                                <Link href="/sign-up" className="text-foreground underline underline-offset-4 hover:text-foreground/80">
                                     Sign up
                                 </Link>
                             </p>
