@@ -83,7 +83,7 @@ export default function CreateBlogPage() {
                         <h1 className="text-2xl font-bold mb-4">Sign in required</h1>
                         <p className="text-muted-foreground mb-6">You need to be signed in to write a blog post.</p>
                         <Button asChild>
-                            <Link href="/login">Sign In</Link>
+                            <Link href="/sign-in">Sign In</Link>
                         </Button>
                     </div>
                 </main>
