@@ -77,7 +77,7 @@ export default function BlogPage() {
                                     </Button>
                                 ) : (
                                     <Button asChild>
-                                        <Link href="/app/sign-in/page.tsx">Sign In to write</Link>
+                                        <Link href="/blog/create">Sign In to write</Link>
                                     </Button>
                                 )}
                             </div>
