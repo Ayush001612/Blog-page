@@ -78,22 +78,30 @@ export default function CreateBlogPage() {
         try {
             let imageUrl: string | undefined
 
-            // Upload image if selected
+            // Upload image if selected (non-blocking - post will be created even if upload fails)
             if (imageFile) {
                 setUploadingImage(true)
                 try {
                     imageUrl = await uploadImage(imageFile, user.uid)
+                    console.log("Image uploaded successfully:", imageUrl)
                 } catch (err) {
                     console.error("Error uploading image:", err)
-                    setError("Failed to upload image. Please try again.")
-                    setSubmitting(false)
+                    // Don't block post creation if image upload fails
+                    setError("Warning: Image upload failed, but post will be created without image.")
+                    // Continue to create post without image
+                } finally {
                     setUploadingImage(false)
-                    return
                 }
-                setUploadingImage(false)
             }
 
+            // Create post regardless of image upload status
             const excerpt = content.slice(0, 150) + (content.length > 150 ? "..." : "")
+            console.log("Creating post with data:", {
+                title: title.trim(),
+                category: category || "General",
+                hasImage: !!imageUrl
+            })
+            
             const newPost = await createPost({
                 title: title.trim(),
                 content: content.trim(),
@@ -103,11 +111,15 @@ export default function CreateBlogPage() {
                 authorName: user.displayName || "Anonymous",
                 imageUrl,
             })
+            
+            console.log("Post created successfully:", newPost.id)
             router.push(`/blog/${newPost.id}`)
         } catch (err) {
             console.error("Error creating post:", err)
-            setError("Failed to create post. Please try again.")
+            const errorMessage = err instanceof Error ? err.message : "Failed to create post. Please try again."
+            setError(errorMessage)
             setSubmitting(false)
+            setUploadingImage(false)
         }
     }
 
@@ -236,7 +248,20 @@ export default function CreateBlogPage() {
                                 />
                             </div>
 
-                            {error && <p className="text-sm text-destructive">{error}</p>}
+                            {error && (
+                                <div className={`p-3 rounded-md text-sm ${
+                                    error.includes("Warning") 
+                                        ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20" 
+                                        : "bg-destructive/10 text-destructive"
+                                }`}>
+                                    {error}
+                                </div>
+                            )}
+                            {uploadingImage && (
+                                <div className="p-3 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 text-sm">
+                                    Uploading image... This may take a moment.
+                                </div>
+                            )}
 
                             <div className="flex gap-3 pt-6">
                                 <Button type="submit" disabled={submitting || uploadingImage}>
