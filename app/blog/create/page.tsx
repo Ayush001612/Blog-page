@@ -14,7 +14,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Send, Upload, X } from "lucide-react"
-import Image from "next/image"
 
 
 const categories = ["Technology", "Design", "Lifestyle", "Travel", "Business", "Health", "General", "Coding"]
@@ -115,11 +114,21 @@ export default function CreateBlogPage() {
             console.log("Post created successfully:", newPost.id)
             router.push(`/blog/${newPost.id}`)
         } catch (err) {
-            console.error("Error creating post:", err)
-            const errorMessage = err instanceof Error ? err.message : "Failed to create post. Please try again."
-            setError(errorMessage)
-            setSubmitting(false)
-            setUploadingImage(false)
+            console.error("Error creating post:", err);
+            let errorMessage = "Failed to create post. Please try again.";
+            if (err instanceof Error) {
+                errorMessage = err.message;
+                // Surface Firebase permission/config errors
+                const fb = err as { code?: string; message?: string };
+                if (fb.code === "permission-denied") {
+                    errorMessage = "Permission denied. Check Firestore rules allow authenticated users to create posts.";
+                } else if (fb.code === "unavailable" || fb.message?.includes("FIRESTORE")) {
+                    errorMessage = "Cannot reach Firestore. Check your connection and Firebase config.";
+                }
+            }
+            setError(errorMessage);
+            setSubmitting(false);
+            setUploadingImage(false);
         }
     }
 
@@ -169,7 +178,7 @@ export default function CreateBlogPage() {
                             Back to Blog</Link>
                         <h1 className="text-3xl font-bold tracking-tight mb-8">Write a new post</h1>
 
-                        <form onSubmit={handleSubmit} className="spacce-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Title *</Label>
                                 <Input type="text" placeholder="Enter your post title" value={title}
@@ -213,12 +222,12 @@ export default function CreateBlogPage() {
                                         Upload Image
                                     </Button>
                                 ) : (
-                                    <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border">
-                                        <Image
+                                    <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border bg-muted">
+                                        {/* eslint-disable-next-line @next/next/no-img-element -- data: URLs not supported by next/image */}
+                                        <img
                                             src={imagePreview}
                                             alt="Preview"
-                                            fill
-                                            className="object-cover"
+                                            className="w-full h-full object-cover"
                                         />
                                         <Button
                                             type="button"

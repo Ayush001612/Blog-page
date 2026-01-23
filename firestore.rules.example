@@ -1,0 +1,20 @@
+// Copy this to Firebase Console > Firestore > Rules (or firestore.rules if using Firebase CLI)
+// These rules allow authenticated users to create/read posts and manage their own content.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Posts: anyone can read; only authenticated users can create
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorId;
+    }
+    // Comments: anyone can read; authenticated users can create/delete their own
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.authorId;
+    }
+  }
+}

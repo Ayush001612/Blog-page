@@ -68,26 +68,33 @@ export async function getPost(id: string): Promise<BlogPost | null> {
 }
 
 export async function createPost(post: Omit<BlogPost, "id" | "createdAt" | "updatedAt">): Promise<BlogPost> {
-    try{
+    try {
         const now = Timestamp.now();
-        const docRef = await addDoc(collection(db,"posts"),{
-            ...post,
+        // Build doc without undefined (Firestore rejects undefined values)
+        const docData: Record<string, unknown> = {
+            title: post.title,
+            content: post.content,
+            excerpt: post.excerpt,
+            category: post.category || "General",
+            authorId: post.authorId,
+            authorName: post.authorName || "Anonymous",
             createdAt: now,
             updatedAt: now,
-        })
-        return{
+        };
+        if (post.imageUrl != null && post.imageUrl !== "") {
+            docData.imageUrl = post.imageUrl;
+        }
+        const docRef = await addDoc(collection(db, "posts"), docData);
+        return {
             ...post,
             id: docRef.id,
             createdAt: now.toDate(),
             updatedAt: now.toDate(),
+        } as BlogPost;
+    } catch (error) {
+        console.error("Error creating post:", error);
+        throw error;
     }
-    
-}
-catch (error) {
-    console.error("Error creating post:", error)
-    throw error
-  }
-
 }
 
 export async function deletePost(id: string): Promise<void>{
