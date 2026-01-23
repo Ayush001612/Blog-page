@@ -108,7 +108,7 @@ export default function CreateBlogPage() {
                 category: category || "General",
                 authorId: user.uid,
                 authorName: user.displayName || "Anonymous",
-                imageUrl,
+                ...(imageUrl != null && imageUrl !== "" ? { imageUrl } : {}),
             })
             
             console.log("Post created successfully:", newPost.id)

@@ -70,7 +70,7 @@ export async function getPost(id: string): Promise<BlogPost | null> {
 export async function createPost(post: Omit<BlogPost, "id" | "createdAt" | "updatedAt">): Promise<BlogPost> {
     try {
         const now = Timestamp.now();
-        // Build doc without undefined (Firestore rejects undefined values)
+        // Build doc without undefined (Firestore rejects undefined); only include imageUrl when it's a non-empty string
         const docData: Record<string, unknown> = {
             title: post.title,
             content: post.content,
@@ -81,8 +81,9 @@ export async function createPost(post: Omit<BlogPost, "id" | "createdAt" | "upda
             createdAt: now,
             updatedAt: now,
         };
-        if (post.imageUrl != null && post.imageUrl !== "") {
-            docData.imageUrl = post.imageUrl;
+        const url = post.imageUrl;
+        if (typeof url === "string" && url.length > 0) {
+            docData.imageUrl = url;
         }
         const docRef = await addDoc(collection(db, "posts"), docData);
         return {
