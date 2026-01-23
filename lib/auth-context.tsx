@@ -17,6 +17,7 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<User>;
   signUp: (email: string, password: string, name?: string) => Promise<User>;
   logout: () => Promise<void>;
+  updateDisplayName: (name: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -51,8 +52,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth);
   };
 
+  const updateDisplayName = async (name: string) => {
+    if (!auth.currentUser) {
+      throw new Error("No user is currently signed in");
+    }
+    await updateProfile(auth.currentUser, { displayName: name });
+    // Force refresh user state
+    setUser({ ...auth.currentUser });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, logout }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, logout, updateDisplayName }}>
       {children}
     </AuthContext.Provider>
   );

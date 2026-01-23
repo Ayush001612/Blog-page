@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, X, LogOut } from 'lucide-react';
+import { Menu, X, LogOut, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ModeToggle } from '@/components/theme-btn';
 import { Button } from '@/components/ui/button';
@@ -72,9 +72,17 @@ export default function Navbar() {
           <div className='hidden md:flex md:items-center md:gap-2 z-10'>
             {user ? (
               <>
-                <span className='text-sm text-muted-foreground px-2'>
-                  {user.displayName || user.email}
-                </span>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  asChild
+                  className='text-sm text-muted-foreground hover:text-foreground'
+                >
+                  <Link href='/settings' className='flex items-center gap-2'>
+                    <Settings className='h-4 w-4' />
+                    {user.displayName || user.email}
+                  </Link>
+                </Button>
                 <Button
                   variant='outline'
                   onClick={handleLogout}
@@ -150,9 +158,18 @@ export default function Navbar() {
             <div className='flex flex-col gap-2 px-4 pt-4 border-t border-border/60'>
               {user ? (
                 <>
-                  <div className='text-sm text-muted-foreground px-2 py-1'>
-                    {user.displayName || user.email}
-                  </div>
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    asChild
+                    className='w-full justify-start text-sm text-muted-foreground hover:text-foreground'
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Link href='/settings' className='flex items-center gap-2'>
+                      <Settings className='h-4 w-4' />
+                      {user.displayName || user.email}
+                    </Link>
+                  </Button>
                   <Button
                     variant='outline'
                     size='sm'
