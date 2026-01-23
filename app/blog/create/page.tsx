@@ -1,18 +1,20 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
 import { createPost } from "@/lib/blog-store"
+import { uploadImage } from "@/lib/image-upload"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Send } from "lucide-react"
+import { ArrowLeft, Send, Upload, X } from "lucide-react"
+import Image from "next/image"
 
 
 const categories = ["Technology", "Design", "Lifestyle", "Travel", "Business", "Health", "General", "Coding"]
@@ -24,6 +26,42 @@ export default function CreateBlogPage() {
     const [category, setCategory] = useState("")
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState("")
+    const [imageFile, setImageFile] = useState<File | null>(null)
+    const [imagePreview, setImagePreview] = useState<string | null>(null)
+    const [uploadingImage, setUploadingImage] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                setError("Please select a valid image file")
+                return
+            }
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setError("Image size must be less than 5MB")
+                return
+            }
+            setImageFile(file)
+            setError("")
+            // Create preview
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const removeImage = () => {
+        setImageFile(null)
+        setImagePreview(null)
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ""
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -38,6 +76,23 @@ export default function CreateBlogPage() {
         setError("")
 
         try {
+            let imageUrl: string | undefined
+
+            // Upload image if selected
+            if (imageFile) {
+                setUploadingImage(true)
+                try {
+                    imageUrl = await uploadImage(imageFile, user.uid)
+                } catch (err) {
+                    console.error("Error uploading image:", err)
+                    setError("Failed to upload image. Please try again.")
+                    setSubmitting(false)
+                    setUploadingImage(false)
+                    return
+                }
+                setUploadingImage(false)
+            }
+
             const excerpt = content.slice(0, 150) + (content.length > 150 ? "..." : "")
             const newPost = await createPost({
                 title: title.trim(),
@@ -46,6 +101,7 @@ export default function CreateBlogPage() {
                 category: category || "General",
                 authorId: user.uid,
                 authorName: user.displayName || "Anonymous",
+                imageUrl,
             })
             router.push(`/blog/${newPost.id}`)
         } catch (err) {
@@ -124,6 +180,50 @@ export default function CreateBlogPage() {
                                 </Select>
                             </div>
 
+                            <div className="space-y-2 pt-2">
+                                <Label htmlFor="image">Featured Image (Optional)</Label>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    id="image"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden"
+                                />
+                                {!imagePreview ? (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="w-full"
+                                    >
+                                        <Upload className="h-4 w-4 mr-2" />
+                                        Upload Image
+                                    </Button>
+                                ) : (
+                                    <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border">
+                                        <Image
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            fill
+                                            className="object-cover"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="icon"
+                                            className="absolute top-2 right-2"
+                                            onClick={removeImage}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                    Recommended: 1200x630px. Max size: 5MB
+                                </p>
+                            </div>
+
                             <div className="space-y-2">
                                 <Label htmlFor="content">Content *</Label>
                                 <Textarea
@@ -139,9 +239,9 @@ export default function CreateBlogPage() {
                             {error && <p className="text-sm text-destructive">{error}</p>}
 
                             <div className="flex gap-3 pt-6">
-                                <Button type="submit" disabled={submitting}>
+                                <Button type="submit" disabled={submitting || uploadingImage}>
                                     <Send className="h-4 w-4 mr-2" />
-                                    {submitting ? "Publishing..." : "Publish Post"}
+                                    {uploadingImage ? "Uploading image..." : submitting ? "Publishing..." : "Publish Post"}
                                 </Button>
                                 <Button type="button" variant="outline" onClick={() => router.push("/blog")}>
                                     Cancel

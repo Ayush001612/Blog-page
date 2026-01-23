@@ -6,6 +6,7 @@ export interface BlogPost {
     authorId: string
     authorName: string
     category: string
+    imageUrl?: string
     createdAt: Date
     updatedAt: Date
   }

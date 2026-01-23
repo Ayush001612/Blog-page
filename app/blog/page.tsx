@@ -20,14 +20,14 @@ export default function BlogPage() {
         const fetchPosts = async () => {
             const label = "fetchPosts"
             console.time(label)
-            try{
+            try {
                 const data = await getPosts()
                 setPosts(data)
             }
-            catch(error){
+            catch (error) {
                 console.error(error);
             }
-            finally{
+            finally {
                 console.timeEnd(label)
 
                 setLoading(false)
@@ -87,13 +87,23 @@ export default function BlogPage() {
                                     <Link key={post.id} href={`/blog/${post.id}`} className="group">
                                         <article className="h-full flex flex-col">
                                             <div className="aspect-16/10 bg-muted rounded-lg mb-4 overflow-hidden relative">
-                                                <Image
-                                                    src={`/.jpg?height=300&width=480&query=${encodeURIComponent(post.title)}`}
-                                                    alt={post.title}
-                                                    fill
-                                                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                                />
+                                                {post.imageUrl ? (
+                                                    <Image
+                                                        src={post.imageUrl}
+                                                        alt={post.title}
+                                                        fill
+                                                        sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        src={`/.jpg?height=300&width=480&query=${encodeURIComponent(post.title)}`}
+                                                        alt={post.title}
+                                                        fill
+                                                        sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                                    />
+                                                )}
                                             </div>
                                             <Badge variant="outline" className="w-fit mb-3">
                                                 {post.category || "General"}

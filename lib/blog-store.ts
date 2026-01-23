@@ -11,7 +11,6 @@ import {
   deleteDoc,
   where,
   Timestamp,
-  collectionGroup,
   limit,
 } from "firebase/firestore"
 import type { BlogPost, Comment } from "./types"
@@ -30,6 +29,7 @@ export async function getPosts(): Promise<BlogPost[]> {
                 authorId: data.authorId,
                 authorName: data.authorName,
                 category: data.category,
+                imageUrl: data.imageUrl,
                 createdAt: data.createdAt?.toDate() || new Date(data.createdAt),
                 updatedAt: data.updatedAt?.toDate() || new Date(data.updatedAt),
             } as BlogPost
@@ -56,6 +56,7 @@ export async function getPost(id: string): Promise<BlogPost | null> {
             authorId: data.authorId,
             authorName: data.authorName,
             category: data.category,
+            imageUrl: data.imageUrl,
             createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt),
             updatedAt: data.updatedAt?.toDate?.() || new Date(data.updatedAt),
           } as BlogPost
